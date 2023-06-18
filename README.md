@@ -1,1 +1,1 @@
-# Arquitetura-e-Organizacao-de-Computadores
+Acompanhamento da Disciplina Arquitetura e Organização de Computadores
