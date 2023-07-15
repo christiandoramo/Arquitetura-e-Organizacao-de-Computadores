@@ -1,12 +1,12 @@
 # nome: Christian Oliveira do Ramo
 # grupo: Grupo: João Lucas, Christian Oliveira,  Allexandre, Vinícius Vasconcelos
-# questão: 1
 # data: 14/07/2023
 # atividade: Lista 03 - Assembly MIPS
 # disciplina: Arquitetura e Organização de Computadores
 # semestre letivo: 
  
-# Questão 1
+# Questão: 1
+
 # Escreva um código que lê quatro valores do usuário (A, B, C e D) e implementa o seguinte código:
 # if (A+D == 7 || B == 2 && C != 5)
 # printf(“TRUE”);
