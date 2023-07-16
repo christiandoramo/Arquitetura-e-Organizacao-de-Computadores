@@ -1,9 +1,9 @@
 # nome: Christian Oliveira do Ramo
-# grupo: Grupo: João Lucas, Christian Oliveira,  Allexandre, Vinícius Vasconcelos
+# grupo: João Lucas, Christian Oliveira,  Allexandre, Vinícius Vasconcelos
 # data: 14/07/2023
 # atividade: Lista 03 - Assembly MIPS
 # disciplina: Arquitetura e Organização de Computadores
-# semestre letivo: 
+# semestre letivo: 2022.2
 
 # Questão: 2
  
