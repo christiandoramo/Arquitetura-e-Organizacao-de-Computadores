@@ -1,96 +1,111 @@
-# nome: Christian Oliveira do Ramo
-# grupo: João Lucas, Christian Oliveira,  Allexandre, Vinícius Vasconcelos
-# data: 14/07/2023
-# atividade: Lista 03 - Assembly MIPS
-# disciplina: Arquitetura e Organização de Computadores
-# semestre letivo: 2022.2
-
-# Questão: 5
-
-# A média móvel é uma ferramenta matemática que permite remover oscilações de uma sequência numérica. 
-# Do ponto de vista de processamento digital de sinais, a média móvel se trata de um filtro digital passa-baixas, ou seja,
-# remove componentes de altas frequências (oscilações) de um sinal digital. 
-# O objetivo desta questão é implementar um programa que calcula a média móvel de janela de tamanho 8 de um array de 
-# inteiros (32 bits), resultando em um array de saída y (dados filtrados) também de inteiros. 
-# O seu programa deve executar as seguintes etapas:
-# Receber do usuário um comprimento N para o array de entrada x. 
-# O comprimento N deve ser obrigatoriamente maior ou igual a 8. 
-# Caso seja menor que 8, deve apresentar a mensagem “N inválido” e reiniciar o programa;
-# Alocar dinamicamente uma região de memória para o array de entrada x de comprimento N;
-# Alocar dinamicamente uma região de memória para o array de saída y, de comprimento (N-7)
-# Realizar um laço para receber do usuário o valor de cada uma das N entradas do array de entrada x 
-# (as entradas devem ser salvas no espaço alocado na memória);
-# Realizar um laço para calcular as (N-7) componentes do array y, dadas por 
-# y[n] = ( x[n] + x[n+1] + x[n+2] + x[n+3] + x[n+4] + x[n+5] + x[n+6] + x[n+7]) / 8. 
-# As componentes devem ser salvas no espaço alocado da memória para y;
-# Imprime (em formato de coluna) o vetor de entrada x;
-# Imprime (em formato de coluna) o vetor de saída y; 
-
 .data
-    msgA: .asciiz "entre com o valor de A: "
-    msgB: .asciiz "entre com o valor de B: "
-    msgC: .asciiz "entre com o valor de C: "
-    msgD: .asciiz "entre com o valor de D: "
-    true: .asciiz "TRUE"
-    false: .asciiz "FALSE"
+prompt1: .asciiz "Digite o comprimento N (maior ou igual a 8): "
+prompt2: .asciiz "Digite o valor para x: "
+invalid_msg: .asciiz "N inválido\n"
+newline: .asciiz "\n"
+space: .asciiz " "
+x_Endereco: .word 0
+y_Endereco: .word 0
+N: .word 0
+
 .text
-    la $a0, msgA # lendo string
-    jal imprimirString # branch para a função
-    jal lerInteiro # branch para lerInteiro
-    add $t0, $0, $v0 # t0 = A
 
-    la $a0, msgB # lendo msg
-    jal imprimirString # imprima string
-    jal lerInteiro
-    add $t1, $0, $v0 # t0 = B
+# Função para alocar memória dinamicamente
+# Argumentos:
+#   $a0 - tamanho do array em palavras (4 bytes cada)
+# Retorna:
+#   $v0 - endereço base do array alocado
+main:
+    # Prompt para receber o comprimento N
+    li $v0, 4
+    la $a0, prompt1
+    syscall
 
-    la $a0, msgC # lendo msg
-    jal imprimirString # imprima string
-    jal lerInteiro
-    add $t2, $0, $v0 # t0 = C
+    # Receber o valor de N do usuário
+    li $v0, 5
+    syscall
+    move $t0, $v0    # $t0 contém o comprimento N
 
-    la $a0, msgD # lendo msg
-    jal imprimirString # imprima string
-    jal lerInteiro
-    add $t3, $0, $v0 # t0 = D
-
-
-    # if (A+D == 7 || ...
-    addi $s0, $0, 7  # s0 = 7
-    add $s1 ,$t0, $t3 # s1 = a + d
-    beq $s0,  $s1, printTrue # a+d == 7 ? ja será impresso TRUE independendo do resto por causa do ||
-
-
-    # if (... B == 2 && C != 5)
-    addi $s0, $0, 5 # s0 = 5
-    beq $t2, $s0, printFalse # Se c = 5 JA PODEMOS dizer que já falso
+    # Verificar se N é válido (N >= 8)
+    li $t1, 8
+    blt $t0, $t1, invalid_input # se t0 < t1 entao e falso q t0>=t1
     
-    addi $s0, $0, 2
-    beq $t1, $s0, printTrue # true Pois apesar da primeira condição falhar a segunda com a terceira não apontou erro
+    sw $t0, N
+
+    # Alocar memória para o array de entrada x
+    addi $t7, $0, 4 # uma word equivale a 4 bytes logo o verdadeiro valor de uma posição é 4
+    mul $t0, $t0,$t7 
+    move $a0, $t0
+    jal allocate_memory
+    move $t2, $v0    # $t2 contém o endereço base do array x
     
-    # falhou no primeiro beq(n branchou),foi verdadeiro no segundo beq(n branchou), falhou no terceiro beq(n branchou)
-    jal printFalse
+    la $a0, x_Endereco
+    sw $t2, ($a0) # guardando posição de x em x_Endereço
+
+    # Alocar memória para o array de saída y (comprimento N - 7)    
+    sub $t0, $t0, 28  # $t0 contém N - 7 (4n-28)
+    move $a0, $t0        # a0 = 4n -28
+    jal allocate_memory
+    move $t3, $v0    # $t3 contém o endereço base do array y
+    
+    la $a0, y_Endereco
+    sw $t2, ($a0) # guardando posição de y em y_Endereço
+
+    # Loop para receber os valores de x do usuário
+    li $t1, 0        # contador do loop
+    la $a0, newline
+    li $v0, 4
+    syscall
+
+input_loop:
+    # Prompt para receber o valor de x[i]
+    li $v0, 4
+    la $a0, prompt2
+    syscall
+
+    # Imprimir o índice i
+    addi $t7,$0,4
+	div $t1, $t7    
+    mflo $a0 #quociente de LO para o a0 
+     li $v0, 1
+    syscall
+
+    # Imprimir o separador ":"
+    la $a0, space
+    li $v0, 4
+    syscall
 
 
 
-    imprimirString:
-        li $v0, 4 # imprima string
-        syscall
-        jr $ra  # voltando para a instrução anterior
+    # Receber o valor de x[i] do usuário
+    li $v0, 5 # recebe inteiro
+    syscall
+    
+    la $a0, x_Endereco # endereço base de x
+    
+    add $t2, $a0, $t1 # endereço de x + contador de posição
+    
+    sw $v0, 0($t2)  # Salvar o valor de x[i] na memória - v0 em x_Endereço + contador(4byte)
 
-    lerInteiro:
-        li $v0, 5 # leia valor inteiro
-        syscall
-        jr $ra
+    addi $t1, $t1, 4       # Incrementar o contador do loop + 4 byte = 1 word  
+    
+    lw $t0, N # t0 = N
+    blt $t1, $t0, input_loop   # Continuar o loop até que i < N
 
-    printTrue:
-        la $a0, true # lendo variavel true
-        li $v0, 4 # imprimindo
-        syscall
-        li $v0, 10 # encerrando programa
+    # Saída do programa
+    li $v0, 10
+    syscall
+    
+allocate_memory:
+    li $v0, 9        	# syscall 9 - sbrk (alocar memória)
+    syscall
+    jr $ra		# foltando pra chamada
 
-    printFalse:
-        la $a0, false # lendo variavel false
-        li $v0, 4 # imprimindo
-        syscall
-        li $v0, 10 # encerrando programav0
+invalid_input:
+    # Mensagem de erro para N inválido
+    li $v0, 4
+    la $a0, invalid_msg
+    syscall
+
+    # Reiniciar o programa
+    j main
