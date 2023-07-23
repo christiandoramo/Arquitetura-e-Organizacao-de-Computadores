@@ -28,15 +28,48 @@ dias:       .asciiz " dias, "
 horas:      .asciiz " horas, "
 min:    .asciiz " minutos e "
 segundos:    .asciiz " segundos\n"
-
+N: .space 13
+convertido: .word 0
 .text
     li      $v0,    4                                           # imprimindo msgInicia
     la      $a0,    msgInicial                                  # lendo msg
     syscall 
 
-    li      $v0,    5                                           # ler inteiro
-    syscall 
-    addiu   $t0,    $v0,        0                               # t0 = entrada em v0
+    li      $v0,    8                                           # ler string - para virar inteiro
+    la   $a0, N							# carrega o endereço de N em endereço a0, posição onde v0 será carregado
+    addi $a1, $0, 13				 		# maximo de caracteres/bytes = 10   4.294.967.295 são 10 algarismos  
+    syscall
+    
+    jal strlen # pegano tamanho da string digitada
+    addi $t3, $v0, -1 # tamanho em t3 menos o terminador /0
+
+    
+    
+    addi    $t0, $0,0       # Inicializa $t0 com zero para acumular o valor inteiroconvertidos
+    la   $a0, N	# recarregando N
+convert_loop:
+    lb      $t2, 0($a0)      # Carrega o caractere atual da string em $t2
+    beq     $t3, $0, convert_done # sair caso os bytes digitaos se esgotaram (t3 = 0)
+    subi $t3, $t3, 1        # bytes digitados menos 1
+
+    subiu     $t2, $t2, 48     # Converta o caractere ASCII para o dígito decimal (volta a valer 0-9 mesmo e não 48-57)
+
+    mulu     $t0, $t0, 10    # Multiplica o valor anterior acumulado por 10 e adiciona o novo dígito
+    
+    addu     $t0, $t0, $t2    # Adicione o dígito convertido ao valor acumulado
+    addiu    $a0, $a0, 1      # Avance para o próximo caractere na string
+
+    j convert_loop     # Repita o loop
+
+convert_done:
+    la $a0, convertido
+    sw $t0, 0($a0)
+    
+    lw $a0, convertido
+    li $v0, 1
+    syscall
+    
+    #addiu   $t0,    $v0,        0                               # t0 = entrada em v0
 
     li      $t1,    31536000                                    # t1 = 1 ano em segundos (60 * 60 * 24 * 30 365)
     divu    $t0,    $t1                                         # N dividido por segundos em ANOS
@@ -73,7 +106,7 @@ segundos:    .asciiz " segundos\n"
     syscall 
 
     li      $v0,    4
-    la      $a0,    anos
+    la      $a0,    anos					# carrega endereço anos
     syscall 
 
     li      $v0,    1
@@ -105,7 +138,7 @@ segundos:    .asciiz " segundos\n"
     syscall 
 
     li      $v0,    4
-    la      $a0,    min
+    la      $a0,    min                                         # carrega endereço
     syscall 
 
     li      $v0,    1
@@ -113,8 +146,24 @@ segundos:    .asciiz " segundos\n"
     syscall 
 
     li      $v0,    4
-    la      $a0,    segundos
+    la      $a0,    segundos					# pega endereço segundos
     syscall 
 
     li      $v0,    10                                          # fim do programa
-    syscall 
+    syscall
+    
+    
+strlen:
+    # Recebe o endereço da string em $a0
+    # Retorna o tamanho da string em $v0
+    move $v0, $zero      # Inicializa o contador para zero
+
+strloop:
+    lb $t0, 0($a0)       # Carrega o caractere atual da string em $t0
+    beq $t0, $zero, strend  # Se chegou ao final da string (null terminator), sai do loop
+    addi $a0, $a0, 1     # Avança para o próximo caractere na string
+    addi $v0, $v0, 1     # Incrementa o contador de caracteres
+    j strloop            # Repete o loop
+
+strend:
+    jr $ra               # Retorna à função chamadora
