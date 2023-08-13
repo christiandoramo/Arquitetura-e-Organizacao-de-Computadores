@@ -1,5 +1,5 @@
-# nome: Christian Oliveira do Ramo
-# grupo: João Lucas, Christian Oliveira,  Allexandre, Vinícius Vasconcelos
+# grupo: 
+#ALEXANDRE VITOR ROCHA DE SOUZA , CHRISTIAN OLIVEIRA DO RAMO, JOAO LUCAS PINTO DE SANTANA, VINICIUS NARIO VASCONCELOS
 # data: 14/07/2023
 # atividade: Lista 03 - Assembly MIPS
 # disciplina: Arquitetura e Organização de Computadores
